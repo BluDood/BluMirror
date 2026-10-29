@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">BluMirror</string>
+    <string name="connect_android_auto">Connect to Android Auto to start mirroring.</string>
+    <string name="car_welcome">Welcome to BluMirror!</string>
+    <string name="ready_to_mirror">Ready to mirror!</string>
+    <string name="open_on_car">Open BluMirror on your car display.</string>
+    <string name="mirroring_active">Mirroring is active</string>
+    <string name="approve_on_phone">Approve screen sharing on your phone.</string>
+    <string name="start_mirroring">Start mirroring</string>
+    <string name="stop_mirroring">Stop mirroring</string>
+    <string name="mirroring_started">Screen mirroring started</string>
+    <string name="mirroring_stopped">Screen mirroring stopped</string>
 </resources>

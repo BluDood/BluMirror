@@ -7,12 +7,15 @@ import androidx.car.app.SurfaceCallback
 import androidx.car.app.SurfaceContainer
 import androidx.car.app.model.Action
 import androidx.car.app.model.ActionStrip
+import androidx.car.app.model.CarIcon
 import androidx.car.app.model.Template
 import androidx.car.app.navigation.model.NavigationTemplate
+import androidx.core.graphics.drawable.IconCompat
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.bludood.mirror.MirrorState
+import com.bludood.mirror.R
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -25,7 +28,8 @@ class MirrorScreen(
     init {
         lifecycle.addObserver(object : DefaultLifecycleObserver {
             override fun onResume(owner: LifecycleOwner) {
-                carContext.getCarService(AppManager::class.java).setSurfaceCallback(this@MirrorScreen)
+                carContext.getCarService(AppManager::class.java)
+                    .setSurfaceCallback(this@MirrorScreen)
 
                 observeJob = MirrorState.isStreaming
                     .onEach { isStreaming ->
@@ -54,7 +58,16 @@ class MirrorScreen(
                 ActionStrip.Builder()
                     .addAction(
                         Action.Builder()
-                            .setTitle("Stop")
+                            .setTitle(carContext.getString(R.string.stop_mirroring))
+                            .setIcon(
+                                CarIcon.Builder(
+                                    IconCompat.createWithResource(
+                                        carContext,
+                                        R.drawable.ms_stop_24
+                                    )
+                                )
+                                    .build()
+                            )
                             .setOnClickListener {
                                 MirrorState.stopAll(carContext)
                             }

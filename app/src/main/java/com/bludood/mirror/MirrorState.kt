@@ -3,7 +3,6 @@ package com.bludood.mirror
 import android.content.Context
 import android.content.Intent
 import android.media.projection.MediaProjection
-import android.util.Log
 import android.view.Surface
 import androidx.car.app.connection.CarConnection
 import com.bludood.mirror.car.MirrorRenderer
@@ -57,7 +56,7 @@ object MirrorState {
 
     fun setSurface(surface: Surface, width: Int, height: Int, dpi: Int) {
         if (!surface.isValid) return
-        
+
         carSurface = surface
         surfaceWidth = width
         surfaceHeight = height

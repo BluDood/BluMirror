@@ -3,6 +3,7 @@ package com.bludood.mirror
 import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -11,7 +12,6 @@ import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.os.Build
 import android.os.IBinder
-import android.app.PendingIntent
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 
@@ -25,17 +25,25 @@ class ProjectionService : Service() {
         val mainIntent = Intent(this, MainActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
         }
-        
+
         val pendingIntent = PendingIntent.getActivity(
             this, 0, mainIntent, PendingIntent.FLAG_IMMUTABLE
         )
 
+        val stopIntent = PendingIntent.getService(
+            this,
+            1,
+            Intent(this, ProjectionService::class.java).setAction(ACTION_STOP),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_menu_view)
-            .setContentTitle("BluMirror")
-            .setContentText("Screen mirroring is active")
+            .setSmallIcon(R.drawable.ms_screen_share_24)
+            .setContentTitle(getString(R.string.app_name))
+            .setContentText(getString(R.string.mirroring_active))
             .setOngoing(true)
             .setContentIntent(pendingIntent)
+            .addAction(R.drawable.ms_stop_24, getString(R.string.stop_mirroring), stopIntent)
             .build()
 
         startForeground(
@@ -46,6 +54,10 @@ class ProjectionService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent?.action == ACTION_STOP) {
+            MirrorState.stopAll(this)
+            return START_NOT_STICKY
+        }
         if (projection != null) return START_STICKY
         if (intent == null) return START_NOT_STICKY
 
@@ -78,7 +90,8 @@ class ProjectionService : Service() {
                     )
 
                     MirrorState.setProjection(mediaProjection)
-                    Toast.makeText(this, "Screen mirroring started", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, getString(R.string.mirroring_started), Toast.LENGTH_SHORT)
+                        .show()
                 }
             }
         } catch (_: Exception) {
@@ -90,7 +103,7 @@ class ProjectionService : Service() {
     }
 
     override fun onDestroy() {
-        Toast.makeText(this, "Screen mirroring stopped", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, getString(R.string.mirroring_stopped), Toast.LENGTH_SHORT).show()
         MirrorState.stopProjection()
         projection?.stop()
         projection = null
@@ -102,7 +115,7 @@ class ProjectionService : Service() {
     private fun createNotificationChannel() {
         val channel = NotificationChannel(
             CHANNEL_ID,
-            "BluMirror",
+            getString(R.string.app_name),
             NotificationManager.IMPORTANCE_LOW
         )
 
@@ -111,6 +124,7 @@ class ProjectionService : Service() {
     }
 
     companion object {
+        private const val ACTION_STOP = "com.bludood.mirror.STOP"
         private const val CHANNEL_ID = "blumirror"
         private const val NOTIFICATION_ID = 42
         private const val EXTRA_RESULT_CODE = "resultCode"

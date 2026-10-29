@@ -6,13 +6,17 @@ import android.view.Display
 import androidx.car.app.CarContext
 import androidx.car.app.Screen
 import androidx.car.app.model.Action
+import androidx.car.app.model.CarColor
+import androidx.car.app.model.CarIcon
 import androidx.car.app.model.MessageTemplate
 import androidx.car.app.model.Template
-import com.bludood.mirror.MirrorState
-import com.bludood.mirror.ProjectionPermissionActivity
+import androidx.core.graphics.drawable.IconCompat
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import com.bludood.mirror.MirrorState
+import com.bludood.mirror.ProjectionPermissionActivity
+import com.bludood.mirror.R
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -29,7 +33,8 @@ class WelcomeScreen(carContext: CarContext) : Screen(carContext) {
                         if (isStreaming && screenManager.top !is MirrorScreen) {
                             try {
                                 screenManager.push(MirrorScreen(carContext))
-                            } catch (_: Exception) { }
+                            } catch (_: Exception) {
+                            }
                         }
                     }
                     .launchIn(lifecycleScope)
@@ -48,20 +53,30 @@ class WelcomeScreen(carContext: CarContext) : Screen(carContext) {
 
     override fun onGetTemplate(): Template {
         if (MirrorState.isWaitingForPermission.value) {
-            return MessageTemplate.Builder(" ")
-                .setLoading(true)
+            return MessageTemplate.Builder(carContext.getString(R.string.approve_on_phone))
                 .build()
         }
 
-        return MessageTemplate.Builder("Welcome to BluMirror!")
-            .addAction(
-                Action.Builder()
-                    .setTitle("Start Mirroring")
-                    .setOnClickListener {
-                        startMirroring()
-                    }
-                    .build(),
+        val startAction = Action.Builder()
+            .setTitle(carContext.getString(R.string.start_mirroring))
+            .setIcon(
+                CarIcon.Builder(
+                    IconCompat.createWithResource(
+                        carContext,
+                        R.drawable.ms_screen_share_24
+                    )
+                )
+                    .build()
             )
+            .setBackgroundColor(CarColor.PRIMARY)
+            .apply {
+                if (carContext.carAppApiLevel >= 4) setFlags(Action.FLAG_PRIMARY)
+            }
+            .setOnClickListener { startMirroring() }
+            .build()
+
+        return MessageTemplate.Builder(carContext.getString(R.string.car_welcome))
+            .addAction(startAction)
             .build()
     }
 
